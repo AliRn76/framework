@@ -80,7 +80,17 @@ class Panther:
         config['startup'] = load_startup(self._configs_module)
         config['shutdown'] = load_shutdown(self._configs_module)
         config['auto_reformat'] = load_auto_reformat(self._configs_module)
+        config['admin_panel'] = load_admin_panel(self._configs_module)
         config['models'] = collect_all_models()
+
+        if config['admin_panel']:
+            try:
+                import fastui
+            except ModuleNotFoundError:
+                raise PantherException("Module 'fastui' not found, Hint: `pip install fastui`")
+            except ImportError:
+                pass
+            config['urls'] = load_panel_urls()
 
         # Initialize Background Tasks
         if config['background_tasks']:
@@ -88,9 +98,8 @@ class Panther:
 
         # Load URLs should be one of the last calls in load_configs,
         #   because it will read all files and loads them.
-        config['flat_urls'], config['urls'] = load_urls(self._configs_module, urls=self._urls)
-        config['urls']['_panel'] = load_panel_urls()
-
+        config['flat_urls'], urls = load_urls(self._configs_module, urls=self._urls)
+        config['urls'] |= urls
         self._create_ws_connections_instance()
 
     def _create_ws_connections_instance(self):

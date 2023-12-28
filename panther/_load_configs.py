@@ -29,6 +29,7 @@ __all__ = (
     'load_startup',
     'load_shutdown',
     'load_auto_reformat',
+    'load_admin_panel',
     'collect_all_models',
     'load_urls',
     'load_panel_urls',
@@ -136,6 +137,10 @@ def load_shutdown(configs: dict, /) -> Callable:
 
 def load_auto_reformat(configs: dict, /) -> bool:
     return configs.get('AUTO_REFORMAT', config['auto_reformat'])
+
+
+def load_admin_panel(configs: dict, /) -> bool:
+    return configs.get('ADMIN_PANEL', config['admin_panel'])
 
 
 def collect_all_models() -> list[dict]:

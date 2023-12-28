@@ -1,56 +1,57 @@
-from panther import status
-from panther.app import API
+from fastui import components as c
+from fastui import prebuilt_html
+from fastui.components.display import DisplayLookup
+from fastui.events import GoToEvent
+
+from panther.app import GenericAPI
 from panther.configs import config
-from panther.panel.utils import get_model_fields
-from panther.request import Request
-from panther.response import Response
+from panther.panel.utils import get_model_fields, _Model
+from panther.response import HTMLResponse
 
 
-@API(methods=['GET'])
-async def models_api():
-    return [{
-        'name': m['name'],
-        'module': m['module'],
-        'index': i
-    } for i, m in enumerate(config['models'])]
+class Landing(GenericAPI):
+    def get(self):
+        return HTMLResponse(prebuilt_html(title='Panther Admin Panel'))
 
 
-@API(methods=['GET', 'POST'])
-async def documents_api(request: Request, index: int):
-    model = config['models'][index]['class']
+class ModelsAPI(GenericAPI):
+    def get(self):
+        models = [{
+            'name': m['name'],
+            'module': m['module'],
+            'index': i
+        } for i, m in enumerate(config['models'])]
+        return [
+            c.Page(
+                components=[
+                    c.Heading(text='Models', level=2),
+                    c.Table[_Model](
+                        data=models,
+                        columns=[
+                            DisplayLookup(field='name', on_click=GoToEvent(url='{index}/')),
+                            DisplayLookup(field='module'),
+                        ],
+                    ),
+                ]
+            ).model_dump(by_alias=True, exclude_none=True),
+        ]
 
-    if request.method == 'POST':
-        validated_data = API.validate_input(model=model, request=request)
-        document = model.insert_one(**validated_data.model_dump(exclude=['id']))
-        return Response(data=document, status_code=status.HTTP_201_CREATED)
 
-    else:
-        result = {
-            'fields': get_model_fields(model),
-        }
-        if data := model.find():
-            result['data'] = data
-        else:
-            result['data'] = []
-        return result
+class DocumentsAPI(GenericAPI):
+    def get(self, index: int):
+        try:
+            model = config['models'][index]['class']
+        except IndexError:
+            return []
 
-
-@API(methods=['PUT', 'DELETE', 'GET'])
-async def single_document_api(request: Request, index: int, document_id: int | str):
-    model = config['models'][index]['class']
-
-    if document := model.find_one(id=document_id):
-        if request.method == 'PUT':
-            validated_data = API.validate_input(model=model, request=request)
-            document.update(**validated_data.model_dump(exclude=['id']))
-            return Response(data=document, status_code=status.HTTP_202_ACCEPTED)
-
-        elif request.method == 'DELETE':
-            document.delete()
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-        else:  # GET
-            return document
-
-    else:
-        return Response(status_code=status.HTTP_404_NOT_FOUND)
+        return [
+            c.Page(
+                components=[
+                    c.Heading(text='Models', level=2),
+                    c.Table[model](
+                        data=model.find(),
+                        columns=[DisplayLookup(field=field) for field in get_model_fields(model).keys()],
+                    ),
+                ]
+            ).model_dump(by_alias=True, exclude_none=True),
+        ]

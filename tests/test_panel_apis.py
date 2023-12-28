@@ -18,9 +18,9 @@ class TestPanelAPIs(TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        Path(DB_PATH).unlink()
+        Path(DB_PATH).unlink(missing_ok=True)
 
     def test_list_of_models(self):
-        response = self.client.get('_panel')
+        response = self.client.get('/api/_panel/')
         expected_keys = ['name', 'module', 'index']
         assert expected_keys == [*response.data[0].keys()]

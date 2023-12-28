@@ -50,6 +50,7 @@ class Config(TypedDict):
     startup: Callable
     shutdown: Callable
     auto_reformat: bool
+    admin_panel: bool
 
 
 config: Config = {
@@ -74,4 +75,5 @@ config: Config = {
     'startup': None,
     'shutdown': None,
     'auto_reformat': False,
+    'admin_panel': False,
 }

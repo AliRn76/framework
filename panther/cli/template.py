@@ -88,6 +88,8 @@ THROTTLING = Throttling(rate=60, duration=timedelta(minutes=1))
 
 # More Info: https://PantherPy.GitHub.io/urls/
 URLs = 'core.urls.url_routing'
+
+ADMIN_PANEL = True
 """ % datetime.now().date().isoformat()
 
 env = """

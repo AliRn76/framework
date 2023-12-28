@@ -68,3 +68,4 @@ STARTUP = 'core.configs.startup'
 SHUTDOWN = 'core.configs.shutdown'
 
 AUTO_REFORMAT = True
+ADMIN_PANEL = True

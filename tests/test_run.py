@@ -22,7 +22,7 @@ class TestRun(TestCase):
 
     def test_load_configs(self):
         from panther.configs import config
-        from panther.panel.apis import documents_api, models_api, single_document_api
+        from panther.panel.apis import Landing, ModelsAPI, DocumentsAPI
 
         base_dir = Path(__name__).resolve().parent
         secret_key = 'fHrIYx3yK0J_UG0K0zD6miLPNy1esoYXzVsvif6e7rY='
@@ -59,11 +59,11 @@ class TestRun(TestCase):
 
         urls = {
             '_panel': {
-                '': models_api,
-                '<index>': {
-                    '': documents_api,
-                    '<document_id>': single_document_api,
-                },
+                '': Landing,
+            },
+            'api/_panel/': {
+                '': ModelsAPI,
+                '<index>': DocumentsAPI,
             },
         }
         assert config['urls'] == urls

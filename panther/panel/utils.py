@@ -1,4 +1,12 @@
+from pydantic import BaseModel
+
 from panther.db.models import Model
+
+
+class _Model(BaseModel):
+    index: int
+    name: str
+    module: str
 
 
 def get_model_fields(model):
