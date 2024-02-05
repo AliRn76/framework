@@ -1,8 +1,26 @@
+use pyo3::prelude::*;
+use rand::Rng;
 mod tree;
 
 use crate::tree::Tree;
+use lazy_static::lazy_static;
+use std::sync::RwLock;
+
+lazy_static! {
+    #[derive(Debug)]
+    static ref GLOBAL_VAR: RwLock<Tree<String, i32>> = RwLock::new(Tree::new(0));
+}
 
 
+#[pyfunction]
+fn initialize_routing() {
+    let mut global_var = GLOBAL_VAR.write().unwrap();
+    *global_var = Tree::new(1);
+}
+// fn initialize_routing2() {
+//     let mut urls = URLS.lock().unwrap();
+//     *urls = Tree::new(1);
+// }
 fn clean_path(raw_path: &str) -> String {
     let mut path: String = String::new();
     // Remove Query Params
@@ -29,7 +47,7 @@ fn push_path(mut path: String, part: &&str) -> String {
 }
 
 
-fn find_endpoint(mut urls: Tree<&str, i32>, path: &str) -> (i32, String) {
+fn finding(mut urls: Tree<&str, i32>, path: &str) -> (i32, String) {
     let endpoint_not_found: (i32, String) = (-1, "".to_string());
 
     let path: String = clean_path(path);
@@ -113,24 +131,48 @@ fn find_endpoint(mut urls: Tree<&str, i32>, path: &str) -> (i32, String) {
     return endpoint_not_found;
 }
 
-fn main() {
-    let mut urls: Tree<&str, i32> = Tree::new(0);
+#[pyfunction]
+fn find_endpoint() {
+    // initialize_routing2();
+    // println!("URLS: {:?}", URLS);
+    let mut urls: Tree<String, i32> = Tree::new(0);
     let mut subtree_a = Tree::new(0);
     let mut subtree_b = Tree::new(0);
 
-    subtree_b.entry("").or_insert(Tree::new(11));
-    subtree_b.entry("ali").or_insert(Tree::new(12));
+    subtree_b.entry("".to_string()).or_insert(Tree::new(11));
+    subtree_b.entry("ali".to_string()).or_insert(Tree::new(12));
 
-    subtree_a.entry("<user_id>").or_insert(subtree_b);
-    subtree_a.entry("login").or_insert(Tree::new(13));
-    urls.entry("users").or_insert(subtree_a);
+    subtree_a.entry("<user_id>".to_string()).or_insert(subtree_b);
+    subtree_a.entry("login".to_string()).or_insert(Tree::new(13));
+    urls.entry("users".to_string()).or_insert(subtree_a);
 
-    let path = "users/<user_id>";
-    let (endpoint, found_path) = find_endpoint(urls, path);
+    // py_urls.set_item("name", urls.clone());
+    let mut global_var = GLOBAL_VAR.write().unwrap();
+    *global_var = urls;
+    let x = GLOBAL_VAR.read();
+    println!("{:?}", x);
 
-    if found_path == "" {
-        println!("\nNonFound.")
-    } else {
-        println!("\nFound: {}", endpoint)
-    }
+    // let global_var = GLOBAL_VAR.read().unwrap();
+    println!("{:?}", *global_var);
+
+    // let mut static_urls = URLS.lock().unwrap();
+    // *static_urls = urls;
+    // let var = GLOBAL_VAR.read().unwrap();
+    // println!("URLS: {:?}", *var);
+    // let path = "users/<user_id>";
+    // let (endpoint, found_path) = finding(urls, path);
+    //
+    // if found_path == "" {
+    //     println!("\nNonFound.")
+    // } else {
+    //     println!("\nFound: {}", endpoint)
+    // }
+}
+
+#[pymodule]
+fn panther_core(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(find_endpoint, m)?)?;
+    m.add_function(wrap_pyfunction!(initialize_routing, m)?)?;
+
+    Ok(())
 }
