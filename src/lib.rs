@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyString};
-use rand::Rng;
 
 use crate::tree::Tree;
 
@@ -98,7 +97,7 @@ fn finding(mut urls: Tree<String, i32>, path: String) -> (i32, String) {
                 }
             }
             None => {
-                for (key, value) in borrowed_url
+                for (key, _value) in borrowed_url
                     .iter()
                     .filter_map(|(p, q)| {
                         if !p.is_empty() && p.get(0).unwrap().starts_with('<') {
@@ -145,7 +144,7 @@ fn finding(mut urls: Tree<String, i32>, path: String) -> (i32, String) {
 
 #[pyfunction]
 fn find_endpoint(path: &PyString) -> i32 {
-    let (endpoint, found_path) = finding(unsafe { URLS.clone() }.unwrap(), path.to_string());
+    let (endpoint, _found_path) = finding(unsafe { URLS.clone() }.unwrap(), path.to_string());
     endpoint
 }
 

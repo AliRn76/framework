@@ -1,6 +1,6 @@
 use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::collections::hash_map::Iter as HashMapIter;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Tree<K, V> {
