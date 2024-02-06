@@ -10,4 +10,3 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = "0.20.2"
 rand = "0.8.5"
-lazy_static = "1.4.0"
